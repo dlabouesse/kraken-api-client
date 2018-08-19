@@ -17,10 +17,10 @@ namespace Payward;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -141,6 +141,18 @@ class KrakenAPI
         if(!is_array($result))
             throw new KrakenAPIException('JSON decode error');
 
-        return $result;
+        // check for potential errors
+        if($result['error'])
+        {
+            foreach($result['error'] as $error)
+            {
+                if($error[0] === "E") // Raise exception only if cointaining error(s)
+                    throw new KrakenAPIException(json_encode($result['error']));
+            }
+            // If no error but warning(s), log them
+            echo("Warning detected: ".json_encode($result['error'])."\n");
+        }
+
+        return $result['result'];
     }
 }
